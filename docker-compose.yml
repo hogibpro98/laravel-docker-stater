@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+    httpd:
+        image: ${COMPOSE_PROJECT_NAME}-nginx:latest
+        build:
+            context: ./docker/nginx/
+            dockerfile: Dockerfile
+        container_name: ${COMPOSE_PROJECT_NAME}-nginx
+        restart: always
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./:/var/www/html
+
+    laravel:
+        image: ${COMPOSE_PROJECT_NAME}-php:latest
+        build:
+            context: ./docker/php/
+            dockerfile: Dockerfile
+        container_name: ${COMPOSE_PROJECT_NAME}-php
+        volumes:
+            - ./:/var/www/html
+        user: ${FIXUID:-1000}:${FIXGID:-1000}
+        environment:
+          PHP_IDE_CONFIG: serverName=Docker
+
+    mix:
+        image: ${COMPOSE_PROJECT_NAME}-mix:latest
+        build:
+            context: ./docker/mix/
+            dockerfile: Dockerfile
+        container_name: ${COMPOSE_PROJECT_NAME}-mix
+        volumes:
+            - ./:/www
+        user: ${FIXUID:-1000}:${FIXGID:-1000}
+        depends_on:
+          - laravel
